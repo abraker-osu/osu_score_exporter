@@ -92,6 +92,35 @@ def fetch_replay_file(apiv1, score_id, mods, beatmap_id, player_id, username):
     return data
 
 
+def process_mods(map_data, replay_data, replay, ar, cs):
+    mods = 0
+    print(f' applying mods: [ {replay.mods} ]...', end='')
+
+    if replay.mods.has_mod('DT') or replay.mods.has_mod('NC'):
+        mods |= (1 << 0)
+
+    if replay.mods.has_mod('HT'):
+        mods |= (1 << 1)
+
+    if replay.mods.has_mod('HR'):
+        mods |= (1 << 2)
+        cs += min(10, cs*1.3)
+        ar += min(10, ar*1.4)
+
+    if replay.mods.has_mod('EZ'):
+        mods |= (1 << 3)
+        cs /= 2
+        ar /= 2
+
+    if replay.mods.has_mod('HD'):
+        mods |= (1 << 4)
+
+    if replay.mods.has_mod('FL'):
+        mods |= (1 << 5)
+
+    return mods, ar, cs
+
+
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print('TODO: print help')
@@ -137,7 +166,8 @@ if __name__ == '__main__':
     scores = apiv2.beatmap_scores(map_id, 'osu').scores
     user_ids = [ score.user_id for score in scores ]
 
-    scores = []
+    scores   = []
+    metadata = []
     
     # Got through scores and get replays
     for user_id, i in zip(user_ids, range(len(user_ids))):
@@ -165,11 +195,18 @@ if __name__ == '__main__':
 
         # Process score
         print(' processing score...', end='')
-        ar_ms = 1800 - 120*beatmap.difficulty.ar if beatmap.difficulty.ar <= 5 else 1950 - 150*beatmap.difficulty.ar
-        cs_px = (109 - 9*beatmap.difficulty.cs)/2
+
+        mods, ar, cs = process_mods(map_data, replay_data, replay, beatmap.difficulty.ar, beatmap.difficulty.cs)
+        ar_ms = 1800 - 120*ar if ar <= 5 else 1950 - 150*ar
+        cs_px = (109 - 9*cs)/2
 
         score_data = StdScoreData.get_score_data(replay_data, map_data, ar_ms=ar_ms, cs_px=cs_px)
         scores.append(score_data)
+        metadata.append({
+            'score_id' : score.id, 
+            'ar_ms'    : ar_ms,
+            'cs_px'    : cs_px
+        })
 
         print(' done')
 
@@ -179,7 +216,7 @@ if __name__ == '__main__':
     for score in scores:
         num_rows += len(score)
 
-    score_data = np.zeros((num_rows, 5))
+    score_data = np.zeros((num_rows, 10))
 
     # Compile data into numpy array
     offset = 0
@@ -188,10 +225,15 @@ if __name__ == '__main__':
         block_size = len(score)
 
         score_data[offset : offset + block_size, 0] = i
-        score_data[offset : offset + block_size, 1] = score['map_t']
-        score_data[offset : offset + block_size, 2] = score['replay_t'] - score['map_t']
-        score_data[offset : offset + block_size, 3] = score['replay_x'] - score['map_x']
-        score_data[offset : offset + block_size, 4] = score['replay_y'] - score['map_y']
+        score_data[offset : offset + block_size, 1] = metadata[i]['score_id']
+        score_data[offset : offset + block_size, 2] = score['map_t']
+        score_data[offset : offset + block_size, 3] = score['replay_t'] - score['map_t']
+        score_data[offset : offset + block_size, 4] = score['replay_x'] - score['map_x']
+        score_data[offset : offset + block_size, 5] = score['replay_y'] - score['map_y']
+        score_data[offset : offset + block_size, 6] = score['type']
+        score_data[offset : offset + block_size, 7] = score['action']
+        score_data[offset : offset + block_size, 8] = metadata[i]['ar_ms']
+        score_data[offset : offset + block_size, 9] = metadata[i]['cs_px']
 
         offset += block_size
         
