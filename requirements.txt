@@ -1,0 +1,6 @@
+-r osu_analysis/requirements.txt
+
+setuptools>41.2.0
+numpy
+ossapi>=2.0.0b10
+requests

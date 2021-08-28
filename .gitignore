@@ -1,0 +1,4 @@
+*.pyc
+*venv/*
+/api_key.py
+/tmp/*
