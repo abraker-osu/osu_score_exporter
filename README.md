@@ -20,7 +20,7 @@ Format:
 | 7     | y-axis hit offset (px)        |
 | 8     | score type (enum, see below)  |
 | 9     | action type (enum, see below) |
-| 10    | map's CS (px)                 |
+| 10    | map's AR (ms)                 |
 | 11    | map's CS (px)                 |
 
 Score type:
