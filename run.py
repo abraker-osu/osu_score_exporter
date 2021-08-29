@@ -216,7 +216,7 @@ if __name__ == '__main__':
     for score in scores:
         num_rows += len(score)
 
-    score_data = np.zeros((num_rows, 10))
+    score_data = np.zeros((num_rows, 12))
 
     # Compile data into numpy array
     offset = 0
@@ -227,13 +227,15 @@ if __name__ == '__main__':
         score_data[offset : offset + block_size, 0] = i
         score_data[offset : offset + block_size, 1] = metadata[i]['score_id']
         score_data[offset : offset + block_size, 2] = score['map_t']
-        score_data[offset : offset + block_size, 3] = score['replay_t'] - score['map_t']
-        score_data[offset : offset + block_size, 4] = score['replay_x'] - score['map_x']
-        score_data[offset : offset + block_size, 5] = score['replay_y'] - score['map_y']
-        score_data[offset : offset + block_size, 6] = score['type']
-        score_data[offset : offset + block_size, 7] = score['action']
-        score_data[offset : offset + block_size, 8] = metadata[i]['ar_ms']
-        score_data[offset : offset + block_size, 9] = metadata[i]['cs_px']
+        score_data[offset : offset + block_size, 3] = score['map_x']
+        score_data[offset : offset + block_size, 4] = score['map_y']
+        score_data[offset : offset + block_size, 5] = score['replay_t'] - score['map_t']
+        score_data[offset : offset + block_size, 6] = score['replay_x'] - score['map_x']
+        score_data[offset : offset + block_size, 7] = score['replay_y'] - score['map_y']
+        score_data[offset : offset + block_size, 8] = score['type']
+        score_data[offset : offset + block_size, 9] = score['action']
+        score_data[offset : offset + block_size, 10] = metadata[i]['ar_ms']
+        score_data[offset : offset + block_size, 11] = metadata[i]['cs_px']
 
         offset += block_size
         
